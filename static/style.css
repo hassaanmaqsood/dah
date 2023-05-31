@@ -16,8 +16,21 @@ body {
   align-items: center;
   text-align: center;
   gap: 15px;
-  max-width: 350px;
+  max-width: 450px;
 }
 #container span:first-child {
   font-size: 36px;
+}
+
+pre,
+code {
+  text-align: left;
+}
+p {
+  max-width: 450px;
+}
+h1,
+h2,
+p {
+  margin-bottom: 0px;
 }

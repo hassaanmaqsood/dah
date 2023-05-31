@@ -28,12 +28,13 @@ app.post('/API/', (req, res) => {
 });
 
 // GET endpoint to list names of all functions
-app.post('/API/', (req, res) => {
-  const { functionBody, functionName, functionArgs } = req.body;
-  const func = new Function(...functionArgs, functionBody);
-  functions.push({ name: functionName, func });
-  res.status(200).json({ message: 'Function uploaded successfully' });
-});
+app.get('/APIs', (req, res)=>{
+  const list = [];
+  functions.forEach((func)=>{
+    list.push(func.name)
+  })
+  res.status(200).json(list);
+})
 
 // GET endpoint to call a function
 app.get('/:funcName/', (req, res) => {

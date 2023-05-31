@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
 });
 
 // POST endpoint to upload a function
-app.post('/API/', (req, res) => {
+app.post('/function/', (req, res) => {
   const { functionBody, functionName, functionArgs } = req.body;
   const func = new Function(...functionArgs, functionBody);
   functions.push({ name: functionName, func });
@@ -28,7 +28,7 @@ app.post('/API/', (req, res) => {
 });
 
 // GET endpoint to list names of all functions
-app.get('/APIs', (req, res)=>{
+app.get('/functions/', (req, res)=>{
   const list = [];
   functions.forEach((func)=>{
     list.push(func.name)

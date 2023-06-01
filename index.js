@@ -15,7 +15,8 @@ app.get('/', (req, res) => {
 
 // POST endpoint to upload a function
 app.post('/function/', (req, res) => {
-  const { functionBody, functionName, functionArgs } = req.body;
+  const { functionBody, functionName, functionArgs, dependencies } = req.body;
+  installDependencies(dependencies);
   const func = new Function(...functionArgs, functionBody);
   functions.push({ name: functionName, func });
   res.status(200).json(
@@ -65,3 +66,25 @@ app.get('/:funcName/', (req, res) => {
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });
+
+/* --- Support Functions */
+
+// Install Dependencies
+function installDependencies(dependencies) {
+  dependencies.forEach((item) => {
+    let module = item.name;
+    if (item.version) {
+      module += `@">=${
+        item.version[0] == '^' ? item.version.substring(1) : item.version
+      }"`;
+    }
+    execSync(`npm install ${module}`, (err, stdout, stderr) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log(stdout);
+      }
+    );
+  });
+}

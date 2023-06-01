@@ -1,109 +1,125 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Dah - JavaScript Functions Hosting</title>
-  <link rel="stylesheet" href="./style.css" />
-</head>
-<body>
-  <div id="container">
-  <span>Dah: API Hosting for JavaScript Functions</span>
-  <span
-    >Host your JavaScript functions effortlessly in the cloud with Dah.
-    Experience seamless deployment, easy function lookup, and secure
-    execution.</span
-  >
-</div>
-<h2>Setting Up:</h2>
-<p>
-  To begin using Dah, make sure you have Node.js installed on your machine. We
-  will be using simple HTTP requests to interact with the Dah service, so you
-  won't need any additional libraries. Let's dive into the steps for uploading
-  and calling functions using Dah.
-</p>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dah - Serverless JavaScript Functions</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <section id="landing">
+      <div id="title">Serverless Functions... dah</div>
+      <div id="sub-title">Flex the power of serverless functions with Dah!</div>
+      <div id="landing-button">npm install daaah</div>
+    </section>
 
-<h2>Upload Function Test:</h2>
-<p>
-  The first step is to upload your function to the Dah service. Here's an
-  example test code to guide you through the process:
-</p>
-<pre><code>
-const http = require('http');
+    <section id="documentation">
+      <input type="text" class="search" placeholder="Filter" />
+      <div id="card-list">
+        <div class="card">
+          <span>Import/Require Daaah</span>
+          <code>
+            <pre>const dah = require('daaah');</pre>
+          </code>
+        </div>
+        <div class="card">
+          <span>Retrieve a list of all functions</span>
+          <code>
+            <pre>
+  async function getAllFunctions() {
+    try {
+      const functionsList = await dah.getFunctions(); 
+      console.log(functionsList);
+    } catch (error) {
+      console.error(error);
+    }
+  }</pre
+            >
+          </code>
+        </div>
+        <div class="card">
+          <span>Post a new function</span>
+          <code>
+            <pre>
+  async function createNewFunction() {
+    try {
+      const func = function myFunction(a, b) {
+        return a + b;
+      };
+  
+      const posted = await dah.postFunction(func);
+      console.log(posted);
+    } catch (error) {
+      console.error(error);
+    }
+  }</pre
+            >
+          </code>
+        </div>
+        <div class="card">
+          <span>Call an existing function</span>
+          <code>
+            <pre>
+  async function executeFunction() {
+    try {
+      const funcName = 'myFunction';
+      const params = [2, 3];
+  
+      const result = await dah.callFunction(funcName, params);
+      console.log(result);
+    } catch (error) {
+      console.error(error);
+    }
+  }</pre
+            >
+          </code>
+        </div>
+      </div>
+      <script>
+        // Caching frequently used DOM elements
+        var input = document.querySelector('input.search');
+        var container = document.querySelector('div#card-list');
+        input.addEventListener('input', filter);
 
-function testFunctionUpload() {
-  const functionData = JSON.stringify({
-    function: 'function add(a, b) { return a + b; }',
-    functionName: 'addition',
-  });
+        function filter() {
+          // Retrieve search query and convert to uppercase
+          var filter = input.value.toUpperCase();
 
-  const options = {
-    hostname: 'localhost',
-    port: YOUR_PORT_NUMBER,
-    path: '/API/',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': functionData.length,
-    },
-  };
+          // Get all card elements within the container
+          var items = container.querySelectorAll('div.card');
 
-  const req = http.request(options, (res) => {
-    res.on('data', (data) => {
-      console.log(data.toString());
-    });
-  });
+          // Loop through all items and apply the filter
+          for (var i = 0; i < items.length; i++) {
+            var txtValue = getAllTextContent(items[i]);
 
-  req.on('error', (error) => {
-    console.error(error);
-  });
+            // Show or hide items based on the search query match
+            items[i].style.display =
+              txtValue.toUpperCase().indexOf(filter) > -1 ? '' : 'none';
+          }
+        }
 
-  req.write(functionData);
-  req.end();
-}
+        function getAllTextContent(node) {
+          var textContent = '';
 
-testFunctionUpload();
-  </code></pre>
-<p>
-  In this code, replace <code>YOUR_PORT_NUMBER</code> with the port number where
-  your Dah server is running. The <code>functionData</code> object contains the
-  function string and the function name. Adjust the <code>function</code> and
-  <code>functionName</code> properties according to your requirements. Once the
-  function is successfully uploaded, you will receive a response indicating the
-  successful upload.
-</p>
+          function traverse(node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+              textContent += node.textContent;
+            } else {
+              for (var i = 0; i < node.childNodes.length; i++) {
+                traverse(node.childNodes[i]);
+              }
+            }
+          }
 
-<h2>Function Call Test:</h2>
-<p>
-  After uploading the function, you can now call it using the Dah service.
-  Here's an example test code to guide you through the process:
-</p>
-<pre><code>
-const http = require('http');
+          traverse(node);
 
-function testFunctionCall() {
-  const functionName = 'addition';
-  const inputParams = [2, 3];
+          return textContent;
+        }
+      </script>
+    </section>
 
-  const options = {
-    hostname: 'localhost',
-    port: YOUR_PORT_NUMBER,
-    path: `/${functionName}/`,
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-
-  const req = http.request(options, (res) => {
-    res.on('data', (data) => {
-      console.log(data.toString());
-    });
-  });
-
-  req.on('error', (error) => {
-    console.error(error);
-  });
-
-</code></pre>
-
-</body>
+    <footer>
+      <p>Made with <span style="color: red">❤</span> by Daa</p>
+    </footer>
+  </body>
 </html>

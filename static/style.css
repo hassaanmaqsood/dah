@@ -65,8 +65,6 @@ section#documentation div.card {
   border: 3px solid #f26a2d;
   border-radius: 3px;
   padding: 5px 7px;
-  width: 80vw;
-  max-width: 400px;
 }
 section#documentation div.card code {
   font-weight: 500;

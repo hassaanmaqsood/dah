@@ -11,6 +11,31 @@
       <div id="title">Dah! It's Serverless</div>
       <div id="sub-title">Flex the power of serverless functions with Dah!</div>
       <div id="landing-button">npm install daaah</div>
+      <script>
+        var copyButton = document.getElementById('landing-button');
+        copyButton.addEventListener('click', function () {
+          copyTextToClipboard(copyButton.textContent);
+          pushNotification('Copied');
+        });
+
+        function copyTextToClipboard(text) {
+          // Create a temporary textarea element
+          var tempTextarea = document.createElement('textarea');
+          tempTextarea.value = text;
+          tempTextarea.style.position = 'fixed';
+          tempTextarea.style.top = '-9999px';
+          tempTextarea.style.left = '-9999px';
+
+          document.body.appendChild(tempTextarea);
+          tempTextarea.select();
+          tempTextarea.setSelectionRange(0, 99999); // For mobile devices
+
+          // Copy the selected text to the clipboard
+          document.execCommand('copy');
+
+          document.body.removeChild(tempTextarea);
+        }
+      </script>
     </section>
 
     <section id="documentation">
@@ -114,6 +139,28 @@
           traverse(node);
 
           return textContent;
+        }
+      </script>
+    </section>
+    
+    <section id="push-notifications">
+      <script>
+        pushNotification('Copied');
+        function pushNotification(message) {
+          // Create the div#notification element with the text content = message
+          const notification = document.createElement('div');
+          notification.textContent = message;
+          notification.id = 'notification';
+
+          // Append div#notification element into section#push-notification
+          const pushNotificationSection =
+            document.getElementById('push-notifications');
+          pushNotificationSection.appendChild(notification);
+
+          // Remove the appended element after 10 seconds
+          setTimeout(() => {
+            notification.remove();
+          }, 800);
         }
       </script>
     </section>

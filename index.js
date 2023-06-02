@@ -1,16 +1,13 @@
+const { exec, execSync } = require('child_process');
+
 const express = require('express');
-const { execSync } = require('child_process');
-const fs = require('fs');
 const app = express();
 const port = 3010;
 const path = require('path');
 
-// Directory to store function files
-const functionsDir = path.resolve('functions');
-// Create functions directory if it doesn't exist
-if (!fs.existsSync(functionsDir)) {
-  fs.mkdirSync(functionsDir);
-}
+// Array to store functions
+const functions = [];
+
 app.use(express.json());
 app.use(express.static('static'));
 
@@ -18,68 +15,59 @@ app.get('/', (req, res) => {
   res.sendFile(path.resolve('pages/index.html'));
 });
 
-app.get('/APIs', (req, res) => {
-  fs.readdir(functionsDir, (err, files) => {
-    if (err) {
-      res.status(500).json({ message: 'Internal server error' });
-    } else {
-      const list = files.map((file) => file.split('.json')[0]);
-      res.status(200).json(list);
-    }
+// POST endpoint to upload a function
+app.post('/function/', (req, res) => {
+  const { functionBody, functionName, functionArgs, dependencies } = req.body;
+  installDependencies(dependencies);
+  const func = new Function(...functionArgs, functionBody);
+  functions.push({ name: functionName, func });
+  res.status(200).json({
+    message: 'Function uploaded successfully',
+    timeStamp: Date.now(),
+    status: 200,
   });
 });
 
-// POST endpoint to upload a function
-app.post('/API/', (req, res) => {
-  const { functionBody, functionName, functionArgs, dependencies } = req.body;
-  const filePath = path.join(functionsDir, `${functionName}.json`);
-  installDependencies(dependencies);
-
-  const functionData = {
-    name: functionName,
-    body: functionBody,
-    args: functionArgs,
-  };
-
-  fs.writeFile(filePath, JSON.stringify(functionData), (err) => {
-    if (err) {
-      res.status(500).json({ message: 'Internal server error' });
-    } else {
-      res.status(200).json({ message: 'Function uploaded successfully' });
-    }
+// GET endpoint to list names of all functions
+app.get('/functions/', (req, res) => {
+  const list = [];
+  functions.forEach((func) => {
+    list.push(func.name);
   });
+  res.status(200).json(list);
 });
 
 // GET endpoint to call a function
 app.get('/:funcName/', (req, res) => {
   const { funcName } = req.params;
   const { params } = req.body;
-  const filePath = path.join(functionsDir, `${funcName}.json`);
+  console.log(req.url);
+  // Search for the function with the specified name
+  const funcObject = functions.find((func) => func.name === funcName);
 
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      res.status(404).json({ message: 'Function not found' });
-    } else {
-      const functionData = JSON.parse(data);
-      const func = new Function(...functionData.args, functionData.body);
-      const startTime = process.hrtime();
-      const result = func(...params);
-      const [secs, nanosecs] = process.hrtime(startTime);
-      const response = {
-        return: result,
-        message: 'Function called successfully',
-        timeStamp: Date.now(),
-        status: 200,
-        runTime: secs + nanosecs / 1e9,
-      };
-      res.status(200).json(response);
-    }
-  });
+  if (!funcObject) {
+    res.status(404).json({ message: 'Function not found' });
+  } else {
+    // Call the function with the parsed input parameters
+    const startTime = process.hrtime();
+    const result = funcObject.func(...params);
+    const [secs, nanosecs] = process.hrtime(startTime);
+    const response = {
+      return: result,
+      message: 'Function called successfully',
+      timeStamp: Date.now(),
+      status: 200,
+      runTime: secs + nanosecs / 1e9,
+    };
+    res.status(200).json(response);
+  }
 });
 
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });
+
+/* --- Support Functions */
 
 // Install Dependencies
 function installDependencies(dependencies) {

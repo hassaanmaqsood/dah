@@ -145,9 +145,13 @@
     
     <section id="push-notifications">
       <script>
-        pushNotification('Hooomaan 😺');
-        function pushNotification(message) {
+        setTimeout(() => {
+          pushNotification('Hooomaan 😺', 1000);
+        }, 500);
+
+        function pushNotification(message, interval) {
           // Create the div#notification element with the text content = message
+          interval = interval ? interval : 500;
           const notification = document.createElement('div');
           notification.textContent = message;
           notification.id = 'notification';
@@ -160,7 +164,7 @@
           // Remove the appended element after 10 seconds
           setTimeout(() => {
             notification.remove();
-          }, 800);
+          }, interval);
         }
       </script>
     </section>

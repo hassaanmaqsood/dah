@@ -17,7 +17,17 @@ app.get('/', (req, res) => {
 
 app.get('/APIs', async (req, res) => {
   try {
-    const list = await db.collection('functions').get(); //possible error
+    const { results: functionsMetaData } = await db
+      .collection('functions')
+      .list();
+    const list = await Promise.all(
+      functionsMetaData.map(async ({ key }) => {
+        const { functionArgs, functionBody } = (
+          await db.collection('functions').get(key)
+        ).props;
+        return key;
+      })
+    );
     res.status(200).json(list);
   } catch (error) {
     console.error(error);

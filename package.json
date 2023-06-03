@@ -8,6 +8,7 @@
   "author": "Hassaan Maqsood",
   "license": "Apache-2.0",
   "dependencies": {
+    "@cyclic.sh/dynamodb": "^0.0.33",
     "axios": "^1.4.0",
     "express": "^4.17.1"
   }

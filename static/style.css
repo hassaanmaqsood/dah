@@ -15,7 +15,10 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(0 0 0 / 85%);
 }
-
+a {
+  text-decoration: none;
+  color: inherit;
+}
 body {
   background: linear-gradient(180deg, #2e2d2d 0%, #1c1b1f 100%);
   color: white;
@@ -106,6 +109,14 @@ section#push-notifications div#notification {
   border-radius: 5px;
   max-width: min(80vw, 300px);
   font-weight: 500;
+}
+footer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+footer > a {
+  font-size: 1.5em;
 }
 
 @media all and (min-width: 500px) {

@@ -5,8 +5,8 @@ const app = express();
 const port = 3010;
 const path = require('path');
 
-// Array to store functions
-const functions = [];
+const CyclicDb = require('@cyclic.sh/dynamodb');
+const db = CyclicDb('cute-gold-iguana-fezCyclicDB');
 
 app.use(express.json());
 app.use(express.static('static'));
@@ -15,51 +15,63 @@ app.get('/', (req, res) => {
   res.sendFile(path.resolve('pages/index.html'));
 });
 
-// POST endpoint to upload a function
-app.post('/function/', (req, res) => {
-  const { functionBody, functionName, functionArgs, dependencies } = req.body;
-  installDependencies(dependencies);
-  const func = new Function(...functionArgs, functionBody);
-  functions.push({ name: functionName, func });
-  res.status(200).json({
-    message: 'Function uploaded successfully',
-    timeStamp: Date.now(),
-    status: 200,
-  });
+app.get('/APIs', async (req, res) => {
+  try {
+    const list = await db.collection('functions').get(); //possible error
+    res.status(200).json(list);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-// GET endpoint to list names of all functions
-app.get('/functions/', (req, res) => {
-  const list = [];
-  functions.forEach((func) => {
-    list.push(func.name);
-  });
-  res.status(200).json(list);
+// POST endpoint to upload a function
+app.post('/API/', async (req, res) => {
+  try {
+    const { functionBody, functionName, functionArgs, dependencies } = req.body;
+    console.log(functionBody, functionArgs);
+    await installDependencies(dependencies);
+    const funcRef = await db
+      .collection('functions')
+      .set(functionName, { functionBody, functionArgs });
+    res.status(200).json({ message: 'Function uploaded successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // GET endpoint to call a function
-app.get('/:funcName/', (req, res) => {
-  const { funcName } = req.params;
-  const { params } = req.body;
-  console.log(req.url);
-  // Search for the function with the specified name
-  const funcObject = functions.find((func) => func.name === funcName);
+app.get('/:funcName/', async (req, res) => {
+  try {
+    const { funcName } = req.params;
+    const { params } = req.body;
 
-  if (!funcObject) {
-    res.status(404).json({ message: 'Function not found' });
-  } else {
-    // Call the function with the parsed input parameters
-    const startTime = process.hrtime();
-    const result = funcObject.func(...params);
-    const [secs, nanosecs] = process.hrtime(startTime);
-    const response = {
-      return: result,
-      message: 'Function called successfully',
-      timeStamp: Date.now(),
-      status: 200,
-      runTime: secs + nanosecs / 1e9,
-    };
-    res.status(200).json(response);
+    const funcDoc = await db.collection('functions').get(funcName);
+
+    if (!funcDoc) {
+      res.status(404).json({ message: 'Function not found' });
+    } else {
+      const { functionBody, functionArgs } = funcDoc.props;
+      console.log(functionBody, functionArgs);
+      const func = new Function(...functionArgs, functionBody);
+
+      const startTime = process.hrtime();
+      const result = func(...params);
+      const [secs, nanosecs] = process.hrtime(startTime);
+      const response = {
+        return: result,
+        message: 'Function called successfully',
+        timeStamp: Date.now(),
+        status: 200,
+        runTime: secs + nanosecs / 1e9,
+      };
+
+      res.status(200).json(response);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -67,23 +79,30 @@ app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });
 
-/* --- Support Functions */
-
 // Install Dependencies
-function installDependencies(dependencies) {
-  dependencies.forEach((item) => {
+async function installDependencies(dependencies) {
+  for (const item of dependencies) {
     let module = item.name;
     if (item.version) {
       module += `@">=${
         item.version[0] == '^' ? item.version.substring(1) : item.version
       }"`;
     }
-    execSync(`npm install ${module}`, (err, stdout, stderr) => {
-      if (err) {
-        console.error(err);
-        return;
+    await execCommand(`npm install ${module}`);
+  }
+}
+
+// Utility function to execute shell commands synchronously
+function execCommand(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(stderr);
+        reject(error);
+      } else {
+        console.log(stdout);
+        resolve();
       }
-      console.log(stdout);
     });
   });
 }

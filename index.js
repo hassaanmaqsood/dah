@@ -6,7 +6,7 @@ const port = 3010;
 const path = require('path');
 
 const CyclicDb = require('@cyclic.sh/dynamodb');
-const db = CyclicDb('cute-gold-iguana-fezCyclicDB');
+const db = CyclicDb('drab-lime-donkey-yokeCyclicDB');
 
 app.use(express.json());
 app.use(express.static('static'));

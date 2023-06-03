@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.resolve('pages/index.html'));
 });
 
-app.get('/APIs', async (req, res) => {
+app.get('/functions', async (req, res) => {
   try {
     const { results: functionsMetaData } = await db
       .collection('functions')
@@ -36,7 +36,7 @@ app.get('/APIs', async (req, res) => {
 });
 
 // POST endpoint to upload a function
-app.post('/API/', async (req, res) => {
+app.post('/function/', async (req, res) => {
   try {
     const { functionBody, functionName, functionArgs, dependencies } = req.body;
     console.log(functionBody, functionArgs);
